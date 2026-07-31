@@ -1,0 +1,8 @@
+.venv/
+.vscode/
+build/
+pictures/
+results/
+onnxruntime_linux_gpu_cuda12_1-28-0/
+bin/
+models/
