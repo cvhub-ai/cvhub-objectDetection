@@ -5,9 +5,9 @@
 #include <opencv2/opencv.hpp>
 
 #include "inference.h"
-#include "yolo_cli.hpp"
-#include "yolo_render.hpp"
-#include "yolo_show.hpp"
+#include "cli.hpp"
+#include "pipeline/render.hpp"
+#include "pipeline/show.hpp"
 
 int main(int argc, char** argv) {
     yolo::Config config;

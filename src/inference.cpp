@@ -9,7 +9,8 @@
 #include <cstring>
 
 #include "coco_names.hpp"
-#include "yolo_postprocess.hpp"
+#include "pipeline/postprocess.hpp"
+#include "pipeline/preprocess.hpp"
 
 namespace yolo {
 namespace {

@@ -11,6 +11,7 @@ cvhub-objectDetection/ <br>
 │ <br>
 ├── src/ <br>
 │ ├── main.cpp <br>
+│ └── inference.cpp <br>
 │ │<br>
 │ ├── core/ <br>
 │ │ ├── engine.cpp<br>
@@ -20,8 +21,7 @@ cvhub-objectDetection/ <br>
 │ │<br>
 │ ├── pipline/ <br>
 │ │ ├── preprocessing/<br>
-│ │ │ ├── preprocessing.cpp<br>
-│ │ │ └── preprocessing.h<br>
+│ │ │ └── preprocessing.hpp<br>
 │ │ ├── recognition<br>
 │ │ │ ├── recognition.cpp<br>
 │ │ │ └── recognition.h<br>
@@ -37,17 +37,18 @@ cvhub-objectDetection/ <br>
 │ │<br>
 │ ├── utils/ <br>
 │ │ ├── logger.cpp<br>
-│ │ ├── logger.h<br>
-│ │ ├── string_utils.cpp<br>
-│ │ ├── string_utils.h<br>
-│ ├── interfaces/ <br>
-│ │ ├── pipeline_stage.h<br>
-│ │ ├── result_callback.h.h<br>
-│ │ └── algorithm_factory.h<br>
+│ │ └── logger.h<br>
 │<br>
 ├── include/ <br>
-│ ├── api.h <br>
-│ ├── config.h<br>
+│ ├── pipline/ <br>
+│ │ ├── inference.h <br>
+│ │ ├── inference.h <br>
+│ │ ├── inference.h <br>
+│ │ ├── inference.h <br>
+│ ├── inference.h <br>
+│ ├── coco_names.hpp <br>
+│ ├── types.hpp <br>
+│ ├── cli.hpp <br>
 │ └── version.h<br>
 │<br>
 ├── tests/ <br>

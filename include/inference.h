@@ -6,7 +6,7 @@
 #include <opencv2/opencv.hpp>
 #include "onnxruntime_cxx_api.h"
 
-#include "yolo_types.hpp"
+#include "types.hpp"
 
 namespace yolo {
 
