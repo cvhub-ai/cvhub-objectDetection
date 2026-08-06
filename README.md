@@ -19,32 +19,17 @@ cvhub-objectDetection/ <br>
 │ │ ├── processor.cpp<br>
 │ │ └── processor.h<br>
 │ │<br>
-│ ├── pipline/ <br>
-│ │ ├── preprocessing/<br>
-│ │ │ └── preprocessing.hpp<br>
-│ │ ├── recognition<br>
-│ │ │ ├── recognition.cpp<br>
-│ │ │ └── recognition.h<br>
-│ │ ├── postprocessing<br>
-│ │ │ ├── postprocessor.cpp<br>
-│ │ │ └── postprocessor.h<br>
-│ │ ├── rendering<br>
-│ │ │ ├── renderer.cpp<br>
-│ │ │ └── renderer.h<br>
-│ │ ├── display<br>
-│ │ │ ├── display.cpp<br>
-│ │ │ └── display.h<br>
-│ │<br>
 │ ├── utils/ <br>
 │ │ ├── logger.cpp<br>
 │ │ └── logger.h<br>
 │<br>
 ├── include/ <br>
 │ ├── pipline/ <br>
-│ │ ├── inference.h <br>
-│ │ ├── inference.h <br>
-│ │ ├── inference.h <br>
-│ │ ├── inference.h <br>
+│ │ ├── draw.hpp <br>
+│ │ ├── postprocess.hpp <br>
+│ │ ├── preprocess.hpp <br>
+│ │ ├── render.hpp <br>
+│ │ └── show.hpp<br>
 │ ├── inference.h <br>
 │ ├── coco_names.hpp <br>
 │ ├── types.hpp <br>
