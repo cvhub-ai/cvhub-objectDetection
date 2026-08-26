@@ -4,10 +4,10 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "inference.h"
-#include "cli.hpp"
-#include "pipeline/render.hpp"
-#include "pipeline/show.hpp"
+#include "pipeline/inference.h"
+#include "utils/cli.hpp"
+#include "utils/render.hpp"
+#include "utils/show.hpp"
 
 int main(int argc, char** argv) {
     yolo::Config config;
@@ -32,12 +32,12 @@ int main(int argc, char** argv) {
 
     cv::Mat semantic;
     std::vector<yolo::Result> results = predictor.predict(image, semantic);
+    
+    // cv::Mat canvas = image.clone();
+    // yolo::RenderAndPrint(canvas, predictor.task(), results, names, semantic);
 
-    cv::Mat canvas = image.clone();
-    yolo::RenderAndPrint(canvas, predictor.task(), results, names, semantic);
-
-    cv::imwrite(output, canvas);
-    std::cout << "Result image written to " << output << std::endl;
-    yolo::Show("YOLO", canvas, show);
+    // cv::imwrite(output, canvas);
+    // std::cout << "Result image written to " << output << std::endl;
+    // yolo::Show("YOLO", canvas, show);
     return 0;
 }

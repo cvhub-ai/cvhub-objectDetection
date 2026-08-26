@@ -26,11 +26,12 @@ endif()
 set(ONNXRUNTIME_VERSION 1-28-0)
 set(ONNXRUNTIME_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime_linux_gpu_cuda12_${ONNXRUNTIME_VERSION}")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${ONNXRUNTIME_ROOT}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR} ${ONNXRUNTIME_ROOT}/include)
 
 set(PROJECT_SOURCES
         src/main.cpp
         src/inference.cpp
+        src/logger.cpp
 )
 
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})

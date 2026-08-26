@@ -17,8 +17,10 @@ inline cv::Mat Preprocess(const cv::Mat& image, int imgsz, bool classify, float&
         cv::Mat resized;
         cv::resize(image, resized, cv::Size(rw, rh), 0, 0, cv::INTER_AREA);
         cv::Mat crop = resized(cv::Rect((rw - imgsz) / 2, (rh - imgsz) / 2, imgsz, imgsz)).clone();
-        cv::cvtColor(crop, crop, cv::COLOR_BGR2RGB);
-        return crop;
+        cv::Mat crop_denoised;
+        cv::bilateralFilter(crop, crop_denoised, 9, 75, 75);
+        cv::cvtColor(crop_denoised, crop_denoised, cv::COLOR_BGR2RGB);
+        return crop_denoised;
     }
     scale = std::min(imgsz / static_cast<float>(image.cols), imgsz / static_cast<float>(image.rows));
     const int new_w = static_cast<int>(std::round(image.cols * scale));
@@ -27,8 +29,10 @@ inline cv::Mat Preprocess(const cv::Mat& image, int imgsz, bool classify, float&
     cv::resize(image, resized, cv::Size(new_w, new_h));
     cv::Mat out = cv::Mat::zeros(imgsz, imgsz, CV_8UC3);  // top-left letterbox, pad bottom/right
     resized.copyTo(out(cv::Rect(0, 0, new_w, new_h)));
-    cv::cvtColor(out, out, cv::COLOR_BGR2RGB);
-    return out;
+    cv::Mat out_denoised;
+    cv::bilateralFilter(out, out_denoised, 9, 75, 75);
+    cv::cvtColor(out_denoised, out_denoised, cv::COLOR_BGR2RGB);
+    return out_denoised;
 }
 
 // HWC uint8 (RGB) -> CHW float32 normalized to [0, 1].

@@ -1,4 +1,4 @@
-#include "inference.h"
+#include "pipeline/inference.h"
 
 #include <array>
 #include <filesystem>
@@ -9,11 +9,10 @@
 #include <cstring>
 
 #include "coco_names.hpp"
-#include "pipeline/postprocess.hpp"
 #include "pipeline/preprocess.hpp"
+#include "logger.h"
 
 namespace yolo {
-namespace {
 
 // IEEE 754 half-precision conversions (FP16 models store input/output as float16).
 uint16_t FloatToHalf(float value) {
@@ -64,9 +63,12 @@ const float* OutputAsFloat(const Ort::Value& value, std::vector<float>& storage)
     return value.GetTensorData<float>();
 }
 
-}  // namespace
+ // namespace
 
 Predictor::Predictor(const Config& config) : config_(config) {
+    Logger& logger = Logger::getInstance();
+    logger.setOutputFile("log.txt");
+    LOG_INFO("Loading onnx model ");
     session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     session_options_.SetIntraOpNumThreads(1);
 #ifdef USE_CUDA
@@ -126,8 +128,68 @@ void Predictor::load_metadata(Ort::AllocatorWithDefaultOptions& allocator) {
     if (names_.empty()) names_ = CocoNames();
 }
 
+std::vector<Result> yolo::Predictor::PostprocessDetect(const float* data, const std::vector<int64_t>& shape,
+                                             float scale, float conf_thr, float iou_thr) 
+{
+    std::vector<Result> results;
+    const float inv = 1.0f / scale;
+    const int dim1 = static_cast<int>(shape[1]);
+    const int dim2 = static_cast<int>(shape[2]);
+    const bool end2end = dim1 > dim2;
+
+    if (end2end) {  // [1, 300, 6] = x1,y1,x2,y2,conf,cls (already NMS'd)
+        for (int i = 0; i < dim1; ++i) {
+            const float* row = data + i * dim2;
+            const float conf = row[4];
+            if (conf < conf_thr) continue;
+            Result r;
+            r.class_id = static_cast<int>(row[5]);
+            r.confidence = conf;
+            r.box = cv::Rect(static_cast<int>(row[0] * inv), static_cast<int>(row[1] * inv),
+                             static_cast<int>((row[2] - row[0]) * inv), static_cast<int>((row[3] - row[1]) * inv));
+            results.push_back(r);
+        }
+        return results;
+    }
+
+    // Grid [1, 4+nc, 8400]: index the channel-major buffer directly (avoids a full
+    // transpose copy and a per-anchor cv::minMaxLoc) and argmax over the class scores.
+    const int nc = dim1 - 4;
+    const int a = dim2;
+    std::vector<cv::Rect> boxes;
+    std::vector<float> confidences;
+    std::vector<int> classIds;
+    for (int i = 0; i < a; ++i) {
+        int best = 0;
+        float best_score = data[4 * a + i];
+        for (int c = 1; c < nc; ++c) {
+            const float s = data[(4 + c) * a + i];
+            if (s > best_score) { best_score = s; best = c; }
+        }
+        if (best_score < conf_thr) continue;
+        const float cx = data[i], cy = data[a + i], w = data[2 * a + i], h = data[3 * a + i];
+        boxes.emplace_back(static_cast<int>((cx - 0.5f * w) * inv), static_cast<int>((cy - 0.5f * h) * inv),
+                           static_cast<int>(w * inv), static_cast<int>(h * inv));
+        confidences.push_back(best_score);
+        classIds.push_back(best);
+    }
+    std::vector<int> keep;
+    cv::dnn::NMSBoxes(boxes, confidences, conf_thr, iou_thr, keep);
+    for (int idx : keep) {
+        Result r;
+        r.class_id = classIds[idx];
+        r.confidence = confidences[idx];
+        r.box = boxes[idx];
+        results.push_back(r);
+    }
+    return results;
+}
+
 std::vector<Result> Predictor::predict(const cv::Mat& image, cv::Mat& semantic) {
     float scale = 1.0f;
+    Logger& logger = Logger::getInstance();
+    logger.setOutputFile("log.txt");
+    LOG_INFO("Preprocessing image for prediction");
     cv::Mat input = Preprocess(image, imgsz_, task_ == Task::Classify, scale);
     std::vector<float> blob = ToBlob(input, imgsz_);
 
@@ -161,28 +223,7 @@ std::vector<Result> Predictor::predict(const cv::Mat& image, cv::Mat& semantic) 
     std::vector<float> main_store, aux_store;  // backing storage for FP16 -> float conversion
     const float* data = OutputAsFloat(outputs[main_idx], main_store);
 
-    switch (task_) {
-        case Task::Detect:
-            return PostprocessDetect(data, shape, scale, config_.conf, config_.iou);
-        case Task::Pose:
-            return PostprocessPose(data, shape, scale, config_.conf, config_.iou);
-        case Task::Obb:
-            return PostprocessObb(data, shape, scale, config_.conf, config_.iou);
-        case Task::Classify:
-            return PostprocessClassify(data, shape);
-        case Task::Segment: {
-            if (aux_idx < 0) return {};
-            std::vector<int64_t> pshape = outputs[aux_idx].GetTensorTypeAndShapeInfo().GetShape();
-            const float* pdata = OutputAsFloat(outputs[aux_idx], aux_store);
-            return PostprocessSegment(data, shape, pdata, pshape, scale, config_.conf, config_.iou, imgsz_, image.size());
-        }
-        case Task::Semantic:
-            PostprocessSemantic(data, shape, scale, imgsz_, image.size(), semantic);
-            return {};
-        default:
-            std::cerr << "[yolo] task '" << TaskName(task_) << "' is not supported." << std::endl;
-            return {};
-    }
+    return PostprocessDetect(data, shape, scale, config_.conf, config_.iou);
 }
 
 }  // namespace yolo

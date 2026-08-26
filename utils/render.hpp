@@ -16,8 +16,8 @@
 
 #include <opencv2/imgproc.hpp>
 
-#include "cli.hpp"
-#include "draw.hpp"
+#include "utils/cli.hpp"
+#include "utils/draw.hpp"
 #include "types.hpp"
 
 namespace yolo {
@@ -27,33 +27,14 @@ namespace yolo {
 inline void RenderAndPrint(cv::Mat& canvas, Task task, const std::vector<Result>& results,
                            const std::vector<std::string>& names, const cv::Mat& semantic) {
     switch (task) {
-        case Task::Semantic:
-            DrawSemantic(canvas, semantic);
-            std::cout << "semantic map rendered (" << names.size() << " classes)" << std::endl;
-            break;
-        case Task::Segment:
         case Task::Detect:
-        case Task::Pose: {
+        {
             for (const Result& r : results) {
                 const std::string name = NameOf(names, r.class_id);
-                if (!r.mask.empty()) DrawMask(canvas, r.mask, r.class_id);
-                if (!r.keypoints.empty()) DrawPose(canvas, r.keypoints, r.keypoint_scores);
                 DrawBox(canvas, r.box, Label(name, r.confidence), r.class_id);
                 std::cout << name << " " << std::fixed << std::setprecision(2) << r.confidence << " box=["
                           << r.box.x << ", " << r.box.y << ", " << r.box.width << ", " << r.box.height << "]"
                           << std::endl;
-            }
-            break;
-        }
-        case Task::Obb: {
-            for (const Result& r : results) {
-                const std::string name = NameOf(names, r.class_id);
-                cv::RotatedRect rr(cv::Point2f(r.box.x + r.box.width * 0.5f, r.box.y + r.box.height * 0.5f),
-                                   cv::Size2f(static_cast<float>(r.box.width), static_cast<float>(r.box.height)),
-                                   r.angle * 180.0f / static_cast<float>(CV_PI));
-                DrawObb(canvas, rr, Label(name, r.confidence), r.class_id);
-                std::cout << name << " " << std::fixed << std::setprecision(2) << r.confidence << " angle="
-                          << r.angle << std::endl;
             }
             break;
         }

@@ -20,20 +20,19 @@ cvhub-objectDetection/ <br>
 │ │ └── processor.h<br>
 │ │<br>
 │ ├── utils/ <br>
-│ │ ├── logger.cpp<br>
+│ │ ├── cli.cpp<br>
+│ │ ├── draw.hpp<br>
+│ │ ├── render.hpp<br>
+│ │ ├── show.hpp<br>
+│ │ ├── logger.hpp<br>
 │ │ └── logger.h<br>
 │<br>
 ├── include/ <br>
 │ ├── pipline/ <br>
-│ │ ├── draw.hpp <br>
-│ │ ├── postprocess.hpp <br>
 │ │ ├── preprocess.hpp <br>
-│ │ ├── render.hpp <br>
-│ │ └── show.hpp<br>
-│ ├── inference.h <br>
+│ │ └── inference.h<br>
 │ ├── coco_names.hpp <br>
 │ ├── types.hpp <br>
-│ ├── cli.hpp <br>
 │ └── version.h<br>
 │<br>
 ├── tests/ <br>

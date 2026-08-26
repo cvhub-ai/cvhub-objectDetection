@@ -34,6 +34,8 @@ class Predictor {
 
    private:
     void load_metadata(Ort::AllocatorWithDefaultOptions& allocator);
+    std::vector<Result> PostprocessDetect(const float* data, const std::vector<int64_t>& shape,
+                                             float scale, float conf_thr, float iou_thr);
 
     Config config_;
     int imgsz_ = 640;
